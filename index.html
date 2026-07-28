@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Cryptography Algorithm Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f23;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a3e, #2a1a4e);
+            color: #00d4ff;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            border-bottom: 2px solid #00d4ff55;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            padding: 10px 20px;
+            border: 1px solid #333;
+            background: #1a1a3e;
+            color: #aaa;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            background: #2a2a5e;
+            color: #fff;
+        }
+        .tab-btn.active {
+            background: #00d4ff22;
+            border-color: #00d4ff;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+            background: #16163a;
+            border: 1px solid #333;
+            border-radius: 0 8px 8px 8px;
+            padding: 24px;
+            animation: fadeIn 0.3s;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h2 {
+            color: #00d4ff;
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+        }
+        .info-box {
+            background: #1e1e4a;
+            border-left: 4px solid #00d4ff;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+            color: #bbb;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        label {
+            display: block;
+            margin-bottom: 4px;
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%;
+            padding: 10px 12px;
+            background: #0f0f2a;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+        input[type="range"] {
+            width: 100%;
+            background: transparent;
+            accent-color: #00d4ff;
+        }
+        .range-value {
+            color: #00d4ff;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+        .btn {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .btn-encrypt {
+            background: #00c853;
+            color: #fff;
+        }
+        .btn-encrypt:hover {
+            background: #00e676;
+            box-shadow: 0 0 15px #00c85355;
+        }
+        .btn-decrypt {
+            background: #d50000;
+            color: #fff;
+        }
+        .btn-decrypt:hover {
+            background: #ff1744;
+            box-shadow: 0 0 15px #d5000055;
+        }
+        .btn-generate {
+            background: #7c4dff;
+            color: #fff;
+        }
+        .btn-generate:hover {
+            background: #b388ff;
+            box-shadow: 0 0 15px #7c4dff55;
+        }
+        .output-box {
+            background: #0a0a1e;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 14px;
+            margin-top: 12px;
+            min-height: 40px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+        .output-box .label {
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .output-box .value {
+            color: #00d4ff;
+            margin-top: 4px;
+        }
+        .flex-row {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .flex-row > * {
+            flex: 1;
+            min-width: 200px;
+        }
+        .step-visual {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #0f0f2a;
+            border-radius: 6px;
+        }
+        .char-box {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            background: #1a1a3e;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 4px 8px;
+            min-width: 32px;
+        }
+        .char-box .original {
+            color: #888;
+            font-size: 0.75rem;
+        }
+        .char-box .transformed {
+            color: #00d4ff;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .char-box .arrow {
+            color: #555;
+            font-size: 0.7rem;
+        }
+        .success { color: #00e676; }
+        .error { color: #ff5252; }
+        .accent { color: #7c4dff; }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #555;
+            font-size: 0.8rem;
+            border-top: 1px solid #1a1a3e;
+            margin-top: 30px;
+        }
+        @media (max-width: 600px) {
+            .tab-btn {
+                font-size: 0.75rem;
+                padding: 8px 12px;
+            }
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>🔐 Cryptography Algorithm Visualizer</h1>
+
+<div class="container">
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="caesar">Caesar Cipher</button>
+        <button class="tab-btn" data-tab="des">DES</button>
+        <button class="tab-btn" data-tab="aes">AES</button>
+        <button class="tab-btn" data-tab="rsa">RSA</button>
+        <button class="tab-btn" data-tab="dh">Diffie-Hellman</button>
+        <button class="tab-btn" data-tab="apps">Applications</button>
+    </div>
+
+    <!-- ============ CAESAR CIPHER ============ -->
+    <div id="tab-caesar" class="tab-content active">
+        <h2>🔡 Caesar Cipher</h2>
+        <div class="info-box">Shifts each letter by a fixed number (shift value). One of the simplest and oldest encryption techniques.</div>
+        <div class="form-group">
+            <label>Plaintext</label>
+            <input type="text" id="caesar-input" value="HELLO WORLD" />
+        </div>
+        <div class="form-group">
+            <label>Shift: <span id="caesar-shift-val" class="range-value">3</span></label>
+            <input type="range" id="caesar-shift" min="1" max="25" value="3" />
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-encrypt" onclick="caesarEncrypt()">🔒 Encrypt</button>
+            <button class="btn btn-decrypt" onclick="caesarDecrypt()">🔓 Decrypt</button>
+        </div>
+        <div id="caesar-steps" class="step-visual"></div>
+        <div class="flex-row">
+            <div class="output-box">
+                <div class="label">Ciphertext</div>
+                <div id="caesar-encrypted" class="value">—</div>
+            </div>
+            <div class="output-box">
+                <div class="label">Decrypted</div>
+                <div id="caesar-decrypted" class="value">—</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ DES ============ -->
+    <div id="tab-des" class="tab-content">
+        <h2>🔐 DES (Simplified)</h2>
+        <div class="info-box">Data Encryption Standard — a symmetric-key block cipher. This is a simplified demonstration showing XOR-based encryption with an 8-bit key.</div>
+        <div class="form-group">
+            <label>Plaintext (ASCII text)</label>
+            <input type="text" id="des-input" value="HELLO" />
+        </div>
+        <div class="form-group">
+            <label>Key (8 chars max)</label>
+            <input type="text" id="des-key" value="CRYPTKEY" maxlength="8" />
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-encrypt" onclick="desEncrypt()">🔒 Encrypt</button>
+            <button class="btn btn-decrypt" onclick="desDecrypt()">🔓 Decrypt</button>
+        </div>
+        <div class="flex-row">
+            <div class="output-box">
+                <div class="label">Ciphertext (Base64)</div>
+                <div id="des-encrypted" class="value">—</div>
+            </div>
+            <div class="output-box">
+                <div class="label">Decrypted</div>
+                <div id="des-decrypted" class="value">—</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ AES ============ -->
+    <div id="tab-aes" class="tab-content">
+        <h2>🔐 AES (Simplified)</h2>
+        <div class="info-box">Advanced Encryption Standard — widely used symmetric encryption. Here using AES via the Web Crypto API for real encryption.</div>
+        <div class="form-group">
+            <label>Plaintext</label>
+            <input type="text" id="aes-input" value="Hello AES!" />
+        </div>
+        <div class="form-group">
+            <label>Password (key)</label>
+            <input type="text" id="aes-key" value="MySecretKey123!" />
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-encrypt" onclick="aesEncrypt()">🔒 Encrypt</button>
+            <button class="btn btn-decrypt" onclick="aesDecrypt()">🔓 Decrypt</button>
+        </div>
+        <div class="flex-row">
+            <div class="output-box">
+                <div class="label">Ciphertext (Base64)</div>
+                <div id="aes-encrypted" class="value">—</div>
+            </div>
+            <div class="output-box">
+                <div class="label">Decrypted</div>
+                <div id="aes-decrypted" class="value">—</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ RSA ============ -->
+    <div id="tab-rsa" class="tab-content">
+        <h2>🔑 RSA</h2>
+        <div class="info-box">Rivest–Shamir–Adleman — asymmetric encryption using public/private key pairs. This simplified version uses small primes for demonstration.</div>
+        <div class="flex-row">
+            <div class="form-group">
+                <label>Prime p</label>
+                <input type="number" id="rsa-p" value="17" min="2" max="997" />
+            </div>
+            <div class="form-group">
+                <label>Prime q</label>
+                <input type="number" id="rsa-q" value="19" min="2" max="997" />
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-generate" onclick="rsaGenerateKeys()">⚙️ Generate Keys</button>
+        </div>
+        <div class="flex-row">
+            <div class="output-box">
+                <div class="label">Public Key (n, e)</div>
+                <div id="rsa-public" class="value">—</div>
+            </div>
+            <div class="output-box">
+                <div class="label">Private Key (n, d)</div>
+                <div id="rsa-private" class="value">—</div>
+            </div>
+        </div>
+        <div class="form-group" style="margin-top:14px;">
+            <label>Message (numbers only, less than n)</label>
+            <input type="number" id="rsa-message" value="65" />
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-encrypt" onclick="rsaEncrypt()">🔒 Encrypt</button>
+            <button class="btn btn-decrypt" onclick="rsaDecrypt()">🔓 Decrypt</button>
+        </div>
+        <div class="flex-row">
+            <div class="output-box">
+                <div class="label">Encrypted (ciphertext)</div>
+                <div id="rsa-encrypted" class="value">—</div>
+            </div>
+            <div class="output-box">
+                <div class="label">Decrypted (plaintext)</div>
+                <div id="rsa-decrypted" class="value">—</div>
+            </div>
+        </div>
+        <div id="rsa-steps" class="step-visual" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- ============ DIFFIE-HELLMAN ============ -->
+    <div id="tab-dh" class="tab-content">
+        <h2>🤝 Diffie-Hellman Key Exchange</h2>
+        <div class="info-box">Enables two parties to securely share a secret key over a public channel. Based on modular exponentiation of a shared base and prime.</div>
+        <div class="flex-row">
+            <div class="form-group">
+                <label>Shared Prime (p)</label>
+                <input type="number" id="dh-prime" value="23" min="3" />
+            </div>
+            <div class="form-group">
+                <label>Shared Base (g)</label>
+                <input type="number" id="dh-base" value="5" min="2" />
+            </div>
+        </div>
+        <div class="flex-row">
+            <div class="form-group">
+                <label>Alice's Private Key</label>
+                <input type="number" id="dh-alice-private" value="6" min="2" />
+            </div>
+            <div class="form-group">
+                <label>Bob's Private Key</label>
+                <input type="number" id="dh-bob-private" value="15" min="2" />
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-generate" onclick="dhCompute()">🔄 Compute Shared Secret</button>
+        </div>
+        <div id="dh-steps" class="step-visual"></div>
+        <div class="flex-row">
+            <div class="output-box">
+                <div class="label">Alice's Public Key</div>
+                <div id="dh-alice-public" class="value">—</div>
+            </div>
+            <div class="output-box">
+                <div class="label">Bob's Public Key</div>
+                <div id="dh-bob-public" class="value">—</div>
+            </div>
+        </div>
+        <div class="output-box" style="margin-top:14px;">
+            <div class="label">Shared Secret (both compute same value)</div>
+            <div id="dh-shared" class="value success">—</div>
+        </div>
+    </div>
+
+    <!-- ============ APPLICATIONS ============ -->
+    <div id="tab-apps" class="tab-content">
+        <h2>🌐 Applications of Cryptography</h2>
+        <div class="info-box">Cryptography is the backbone of modern digital security. Here are key real-world applications:</div>
+        
+        <div style="margin-top:20px;">
+            <div style="background:#1a1a3e; border-left:4px solid #00c853; padding:16px; border-radius:0 8px 8px 0; margin-bottom:16px;">
+                <h3 style="color:#00e676;">🛡️ Cybersecurity</h3>
+                <p style="color:#bbb; font-size:0.9rem; margin-top:6px;">
+                    Cryptography protects data at rest (encrypted files, databases) and in transit (HTTPS, VPNs). 
+                    It ensures confidentiality, integrity, and authentication across networks and systems.
+                </p>
+            </div>
+            <div style="background:#1a1a3e; border-left:4px solid #00b0ff; padding:16px; border-radius:0 8px 8px 0; margin-bottom:16px;">
+                <h3 style="color:#40c4ff;">📡 Secure Communication</h3>
+                <p style="color:#bbb; font-size:0.9rem; margin-top:6px;">
+                    Protocols like TLS/SSL, SSH, and WhatsApp's end-to-end encryption rely on cryptography 
+                    (AES, RSA, Diffie-Hellman) to keep messages private between sender and receiver.
+                </p>
+            </div>
+            <div style="background:#1a1a3e; border-left:4px solid #7c4dff; padding:16px; border-radius:0 8px 8px 0; margin-bottom:16px;">
+                <h3 style="color:#b388ff;">✍️ Digital Signatures</h3>
+                <p style="color:#bbb; font-size:0.9rem; margin-top:6px;">
+                    Used in software distribution, blockchain transactions, legal documents, and email (PGP). 
+                    RSA and ECDSA signatures verify authenticity and non-repudiation of digital messages.
+                </p>
+            </div>
+            <div style="background:#1a1a3e; border-left:4px solid #ff6d00; padding:16px; border-radius:0 8px 8px 0; margin-bottom:16px;">
+                <h3 style="color:#ff9100;">🏦 Banking & E-Commerce</h3>
+                <p style="color:#bbb; font-size:0.9rem; margin-top:6px;">
+                    Online transactions, credit card payments, and blockchain use hybrid cryptosystems 
+                    combining symmetric (AES) and asymmetric (RSA, ECC) encryption for speed and security.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer>🔐 Cryptography Algorithm Visualizer — Educational Demonstration</footer>
+
+<script>
+    // ========== TAB SYSTEM ==========
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    // ========== CAESAR CIPHER ==========
+    document.getElementById('caesar-shift').addEventListener('input', function() {
+        document.getElementById('caesar-shift-val').textContent = this.value;
+        caesarEncrypt();
+    });
+
+    function caesarEncrypt() {
+        const input = document.getElementById('caesar-input').value;
+        const shift = parseInt(document.getElementById('caesar-shift').value);
+        const result = caesarShift(input, shift);
+        document.getElementById('caesar-encrypted').textContent = result;
+        showCaesarSteps(input, shift);
+        // auto decrypt
+        document.getElementById('caesar-decrypted').textContent = caesarShift(result, -shift);
+    }
+
+    function caesarDecrypt() {
+        const input = document.getElementById('caesar-input').value;
+        const shift = parseInt(document.getElementById('caesar-shift').value);
+        const encrypted = caesarShift(input, shift);
+        const decrypted = caesarShift(encrypted, -shift);
+        document.getElementById('caesar-encrypted').textContent = encrypted;
+        document.getElementById('caesar-decrypted').textContent = decrypted;
+        showCaesarSteps(input, shift);
+    }
+
+    function caesarShift(text, shift) {
+        return text.split('').map(ch => {
+            if (ch >= 'A' && ch <= 'Z') return String.fromCharCode(((ch.charCodeAt(0) - 65 + shift % 26 + 26) % 26) + 65);
+            if (ch >= 'a' && ch <= 'z') return String.fromCharCode(((ch.charCodeAt(0) - 97 + shift % 26 + 26) % 26) + 97);
+            return ch;
+        }).join('');
+    }
+
+    function showCaesarSteps(input, shift) {
+        const container = document.getElementById('caesar-steps');
+        container.innerHTML = '<div style="color:#888;font-size:0.8rem;width:100%;margin-bottom:6px;">Letter-by-letter transformation (shift=' + shift + '):</div>';
+        input.split('').forEach(ch => {
+            const box = document.createElement('div');
+            box.className = 'char-box';
+            let transformed = ch;
+            if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
+                transformed = caesarShift(ch, shift);
+            }
+            box.innerHTML = '<span class="original">' + (ch === ' ' ? '␣' : ch) + '</span><span class="arrow">↓</span><span class="transformed">' + (transformed === ' ' ? '␣' : transformed) + '</span>';
+            container.appendChild(box);
+        });
+    }
+
+    // ========== DES (Simplified XOR-based) ==========
+    function desEncrypt() {
+        const plaintext = document.getElementById('des-input').value;
+        const key = document.getElementById('des-key').value;
+        if (!plaintext || !key) { alert('Please enter text and key.'); return; }
+        const encrypted = desXor(plaintext, key);
+        document.getElementById('des-encrypted').textContent = btoa(encrypted);
+        document.getElementById('des-decrypted').textContent = '—';
+    }
+
+    function desDecrypt() {
+        const cipherB64 = document.getElementById('des-encrypted').textContent;
+        const key = document.getElementById('des-key').value;
+        if (!cipherB64 || cipherB64 === '—' || !key) { alert('Encrypt first or provide key.'); return; }
+        try {
+            const ciphertext = atob(cipherB64);
+            const decrypted = desXor(ciphertext, key);
+            document.getElementById('des-decrypted').textContent = decrypted;
+        } catch(e) {
+            document.getElementById('des-decrypted').textContent = '[Error: Invalid ciphertext]';
+        }
+    }
+
+    function desXor(text, key) {
+        let result = '';
+        for (let i = 0; i < text.length; i++) {
+            result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        return result;
+    }
+
+    // ========== AES (Web Crypto API) ==========
+    async function aesEncrypt() {
+        const plaintext = document.getElementById('aes-input').value;
+        const password = document.getElementById('aes-key').value;
+        if (!plaintext || !password) { alert('Please enter text and key.'); return; }
+        try {
+            const key = await aesGetKey(password);
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const encoded = new TextEncoder().encode(plaintext);
+            const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
+            const combined = new Uint8Array(iv.length + encrypted.byteLength);
+            combined.set(iv);
+            combined.set(new Uint8Array(encrypted), iv.length);
+            document.getElementById('aes-encrypted').textContent = btoa(String.fromCharCode(...combined));
+            document.getElementById('aes-decrypted').textContent = '—';
+        } catch(e) {
+            document.getElementById('aes-encrypted').textContent = '[Error: ' + e.message + ']';
+        }
+    }
+
+    async function aesDecrypt() {
+        const cipherB64 = document.getElementById('aes-encrypted').textContent;
+        const password = document.getElementById('aes-key').value;
+        if (!cipherB64 || cipherB64 === '—' || !password) { alert('Encrypt first or provide key.'); return; }
+        try {
+            const data = Uint8Array.from(atob(cipherB64), c => c.charCodeAt(0));
+            const iv = data.slice(0, 12);
+            const encrypted = data.slice(12);
+            const key = await aesGetKey(password);
+            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted);
+            document.getElementById('aes-decrypted').textContent = new TextDecoder().decode(decrypted);
+        } catch(e) {
+            document.getElementById('aes-decrypted').textContent = '[Decrypt Error: wrong key or corrupted data]';
+        }
+    }
+
+    async function aesGetKey(password) {
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+        return crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt: enc.encode('salt'), iterations: 10000, hash: 'SHA-256' },
+            keyMaterial,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    }
+
+    // ========== RSA (Simplified with small primes) ==========
+    let rsaKeys = { n: 0, e: 0, d: 0 };
+
+    function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+    function modInverse(a, m) {
+        for (let x = 1; x < m; x++) {
+            if ((a * x) % m === 1) return x;
+        }
+        return 1;
+    }
+
+    function modPow(base, exp, mod) {
+        let result = 1;
+        base = base % mod;
+        while (exp > 0) {
+            if (exp % 2 === 1) result = (result * base) % mod;
+            exp = Math.floor(exp / 2);
+            base = (base * base) % mod;
+        }
+        return result;
+    }
+
+    function rsaGenerateKeys() {
+        const p = parseInt(document.getElementById('rsa-p').value);
+        const q = parseInt(document.getElementById('rsa-q').value);
+        if (p === q) { alert('p and q must be different.'); return; }
+        const n = p * q;
+        const phi = (p - 1) * (q - 1);
+        let e = 3;
+        while (gcd(e, phi) !== 1) e += 2;
+        const d = modInverse(e, phi);
+        rsaKeys = { n, e, d };
+        document.getElementById('rsa-public').textContent = `(${n}, ${e})`;
+        document.getElementById('rsa-private').textContent = `(${n}, ${d})`;
+        document.getElementById('rsa-steps').innerHTML = `
+            <div style="color:#888;font-size:0.8rem;width:100%;">Key Generation Steps:</div>
+            <div style="color:#aaa;font-size:0.85rem;">p=${p}, q=${q} → n=${n}, φ(n)=${phi}</div>
+            <div style="color:#aaa;font-size:0.85rem;">e=${e} (coprime w/ φ) → d=${d} (modular inverse of e mod φ)</div>
+        `;
+        document.getElementById('rsa-encrypted').textContent = '—';
+        document.getElementById('rsa-decrypted').textContent = '—';
+    }
+
+    function rsaEncrypt() {
+        if (!rsaKeys.n) { alert('Generate keys first.'); return; }
+        const msg = parseInt(document.getElementById('rsa-message').value);
+        if (isNaN(msg) || msg >= rsaKeys.n) { alert('Message must be a number less than n (' + rsaKeys.n + ').'); return; }
+        const encrypted = modPow(msg, rsaKeys.e, rsaKeys.n);
+        document.getElementById('rsa-encrypted').textContent = encrypted;
+        document.getElementById('rsa-decrypted').textContent = '—';
+        document.getElementById('rsa-steps').innerHTML +=
+            `<div style="color:#00d4ff;font-size:0.85rem;margin-top:4px;">Encrypt: ${msg}^${rsaKeys.e} mod ${rsaKeys.n} = ${encrypted}</div>`;
+    }
+
+    function rsaDecrypt() {
+        if (!rsaKeys.n) { alert('Generate keys first.'); return; }
+        const encrypted = parseInt(document.getElementById('rsa-encrypted').textContent);
+        if (isNaN(encrypted) || document.getElementById('rsa-encrypted').textContent === '—') { alert('Encrypt a message first.'); return; }
+        const decrypted = modPow(encrypted, rsaKeys.d, rsaKeys.n);
+        document.getElementById('rsa-decrypted').textContent = decrypted;
+        document.getElementById('rsa-steps').innerHTML +=
+            `<div style="color:#00e676;font-size:0.85rem;margin-top:4px;">Decrypt: ${encrypted}^${rsaKeys.d} mod ${rsaKeys.n} = ${decrypted}</div>`;
+    }
+
+    // ========== DIFFIE-HELLMAN ==========
+    function dhCompute() {
+        const p = parseInt(document.getElementById('dh-prime').value);
+        const g = parseInt(document.getElementById('dh-base').value);
+        const a = parseInt(document.getElementById('dh-alice-private').value);
+        const b = parseInt(document.getElementById('dh-bob-private').value);
+        if (!p || !g || !a || !b) { alert('Fill all fields.'); return; }
+
+        const A = modPow(g, a, p);
+        const B = modPow(g, b, p);
+        const secretA = modPow(B, a, p);
+        const secretB = modPow(A, b, p);
+
+        document.getElementById('dh-alice-public').textContent = A;
+        document.getElementById('dh-bob-public').textContent = B;
+        document.getElementById('dh-shared').textContent = secretA + ' ✓ (Alice & Bob match)';
+
+        document.getElementById('dh-steps').innerHTML = `
+            <div style="color:#888;font-size:0.8rem;width:100%;">Key Exchange Steps:</div>
+            <div style="color:#aaa;font-size:0.85rem;">Public params: p=${p}, g=${g}</div>
+            <div style="color:#40c4ff;font-size:0.85rem;">Alice: private=${a} → public = g^a mod p = ${A}</div>
+            <div style="color:#ff9100;font-size:0.85rem;">Bob:   private=${b} → public = g^b mod p = ${B}</div>
+            <div style="color:#00e676;font-size:0.85rem;">Alice computes: BobPub^a mod p = ${B}^${a} mod ${p} = ${secretA}</div>
+            <div style="color:#00e676;font-size:0.85rem;">Bob computes:   AlicePub^b mod p = ${A}^${b} mod ${p} = ${secretB}</div>
+            <div style="color:#00d4ff;font-size:0.9rem;font-weight:bold;margin-top:4px;">✅ Shared Secret = ${secretA}</div>
+        `;
+    }
+
+    // Initialize Caesar on load
+    window.onload = function() {
+        caesarEncrypt();
+    };
+</script>
+
+</body>
+</html>
+
